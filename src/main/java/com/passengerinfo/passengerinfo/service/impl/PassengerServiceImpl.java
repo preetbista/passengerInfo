@@ -29,23 +29,17 @@ public class PassengerServiceImpl implements PassengerService {
         PassengerDto[] passengerDtos = responseEntity.getBody();
         assert passengerDtos != null;
 
-        String [] usernameList = restTemplate.getForEntity(
+        String[] usernameList = restTemplate.getForEntity(
                 "http://localhost:8085/users/user-rest", String[].class).getBody();
 
         String[] seatNameList = restTemplate.getForEntity(
                 "http://localhost:8085/cabins/cabin-rest", String[].class).getBody();
 
-        for (PassengerDto dto : passengerDtos) {
-            assert usernameList != null;
-            for (String username : usernameList) {
-                dto.setUserName(username);
-            }
-
+        for (int i = 0; i < passengerDtos.length; i++) {
             assert seatNameList != null;
-            for (String seatName : seatNameList) {
-                dto.setSeatName(seatName);
-            }
-
+            passengerDtos[i].setSeatName(seatNameList[i]);
+            assert usernameList != null;
+            passengerDtos[i].setUserName(usernameList[i]);
         }
         log.info("After traversing");
 

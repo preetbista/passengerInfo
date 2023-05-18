@@ -12,9 +12,4 @@ public class PassengerinfoApplication {
 		SpringApplication.run(PassengerinfoApplication.class, args);
 	}
 
-	@Bean
-	public RestTemplate restTemplate(){
-		return new RestTemplate();
-	}
-
 }
