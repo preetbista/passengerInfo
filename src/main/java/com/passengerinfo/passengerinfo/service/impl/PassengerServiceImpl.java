@@ -5,7 +5,7 @@ import com.passengerinfo.passengerinfo.service.PassengerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -17,23 +17,32 @@ import java.util.List;
 @Slf4j
 public class PassengerServiceImpl implements PassengerService {
 
-    @Override
-    public List<PassengerDto> getAllPassenger(){
-        log.info("book-ticket/ticket");
-        RestTemplate restTemplate = new RestTemplate();
-        String endpointUrl = "http://localhost:8085/book-ticket/ticket";
+    private final RestTemplate restTemplate;
 
-        ResponseEntity<PassengerDto[]> responseEntity = restTemplate.getForEntity(
-                endpointUrl, PassengerDto[].class);
+    @Override
+    public List<PassengerDto> getAllPassenger(String authToken){
+        log.info("book-ticket/ticket");
+        String endpointUrl = "http://flight-service/book-ticket/ticket";
+
+        HttpHeaders headers = new HttpHeaders();
+        if (!authToken.contains("Bearer")) {
+            authToken += "Bearer";
+        }
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", authToken);
+        HttpEntity<String> authEntity = new HttpEntity<>(headers);
+
+        ResponseEntity<PassengerDto[]> responseEntity = restTemplate.exchange(
+                endpointUrl, HttpMethod.GET , authEntity, PassengerDto[].class);
 
         PassengerDto[] passengerDtos = responseEntity.getBody();
         assert passengerDtos != null;
 
-        String[] usernameList = restTemplate.getForEntity(
-                "http://localhost:8085/users/user-rest", String[].class).getBody();
+        String[] usernameList = restTemplate.exchange(
+                "http://flight-service/users/user-rest", HttpMethod.GET, authEntity, String[].class).getBody();
 
-        String[] seatNameList = restTemplate.getForEntity(
-                "http://localhost:8085/cabins/cabin-rest", String[].class).getBody();
+        String[] seatNameList = restTemplate.exchange(
+                "http://flight-service/cabins/cabin-rest", HttpMethod.GET, authEntity, String[].class).getBody();
 
         for (int i = 0; i < passengerDtos.length; i++) {
             assert seatNameList != null;
